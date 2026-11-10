@@ -15,7 +15,7 @@ export default defineNuxtConfig({
   // Connect to the backend API using runtime config
   runtimeConfig: {
     public: {
-      apiBase: 'process.env.NUXT_PUBLIC_API_BASE',
+      apiBase: 'http://localhost:8001',
     },
   }, 
 

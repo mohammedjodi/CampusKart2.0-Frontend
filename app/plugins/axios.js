@@ -5,9 +5,11 @@ export default defineNuxtPlugin(() => {
 
   const api = axios.create({
     baseURL: config.public.apiBase,
-
+    withCredentials: true,
+    withXSRFToken: true,
     headers: {
       Accept: 'application/json',
+      
     },
   })
 
