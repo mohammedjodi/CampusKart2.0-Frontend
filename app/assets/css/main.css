@@ -1,17 +1,158 @@
+/* =========================================
+   FONT
+========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+/* =========================================
+   TAILWIND CSS
+========================================= */
+
 @import "tailwindcss";
 
+/* =========================================
+   CAMPUSKART DESIGN SYSTEM
+========================================= */
+
 :root {
-  font-family: Arial, sans-serif;
+
+    /* Brand colours */
+    --ck-primary: #FFB347;
+    --ck-primary-dark: #FF8C00;
+    /* --ck-secondary: #b44fd3; */
+
+    /* Backgrounds */
+    --ck-bg: #ffffff;
+    --ck-bg-soft: #f8f8fa;
+    --ck-card: #ffffff;
+
+    /* Text */
+    --ck-text: #161616;
+    --ck-text-muted: #777777;
+    --ck-text-light-muted: #999999;
+    --ck-text-light: #ffffff;
+
+    /* Borders */
+    --ck-border: #e8e8e8;
+
+    /* Status */
+    --ck-success: #198754;
+    --ck-danger: #e5484d;
+
+    /* Quick action colours */
+    --ck-blue: #2678ff;
+    --ck-green: #10a66a;
+    --ck-orange: #f47b20;
+
+    /* Product condition colours */
+    --ck-good: #12a66a;
+    --ck-good-bg: #e8f8f1;
+
+    --ck-new: #2780ed;
+    --ck-new-bg: #eaf3ff;
+
+    --ck-fair: #ed8a26;
+    --ck-fair-bg: #fff2df;
+
+    /* Shadows */
+    --ck-shadow: 0 4px 18px rgba(0, 0, 0, .07);
+    --ck-shadow-hover: 0 10px 30px rgba(0, 0, 0, .11);
+
+    /* Border radius */
+    --ck-radius-sm: 8px;
+    --ck-radius-md: 12px;
+    --ck-radius-lg: 18px;
+
+    /* Typography */
+    --font-primary: 'Manrope', sans-serif;
+
+    /* Legacy / additional brand colours */
+    --color-bg-nav: linear-gradient(to right, #FFB347 30%, #FF8C00 70%);
+    --color-bg: #e0dddd;
+    --color-logo: #533c1f;
+
+    --color-red: #da0f3f;
+    --color-red-light: hsl(346, 87%, 46%, 15%);
+
+    --color-green: #00c476;
+    --color-green-light: hsl(156, 100%, 38%, 15%);
+
+    --color-gray-900: #1e1e66;
+    --color-gray-700: #2d2b7c;
+    --color-gray-300: rgba(242, 242, 254, 0.3);
+    --color-gray-200: rgba(242, 242, 242, 0.7);
+
+    --color-white: #ffffff;
+
+    /* Transitions */
+    --transition: all 300ms ease;
+
+    /* Layout */
+    --container-width-lg: 74%;
+    --container-width-md: 90%;
+    --form-width: 40%;
+
+    /* Legacy border radius */
+    --card-border-radius-1: 0.3rem;
+    --card-border-radius-2: 0.5rem;
+    --card-border-radius-3: 0.8rem;
+    --card-border-radius-4: 2rem;
+    --card-border-radius-5: 5rem;
+
+    --ck-sidebar-bg: linear-gradient(230deg, #eb8508, #e0831f, #ff9b4a);
+    --ck-overlay: rgba(0, 0, 0, 0.5);
+    --ck-radius-xl: 24px;
+
 }
 
+/* =========================================
+   GLOBAL RESET
+========================================= */
+
 * {
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 html {
-  scroll-behavior: smooth;
+    scroll-behavior: smooth;
 }
 
 body {
-  margin: 0;
+    font-family: var(--font-primary);
+    background-color: var(--ck-bg);
+    color: var(--ck-text);
+    line-height: 1.6;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+/* =========================================
+   GLOBAL LAYOUT
+========================================= */
+
+.container {
+    width: var(--container-width-lg);
+    max-width: 1440px;
+    margin-inline: auto;
 }
