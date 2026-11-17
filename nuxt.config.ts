@@ -8,7 +8,7 @@ export default defineNuxtConfig({
     enabled: true,
   },
 
-  modules: ['@pinia/nuxt', '@nuxt/eslint'],
+  modules: ['@pinia/nuxt', '@nuxt/eslint' , 'vue-sonner/nuxt'],
 
   css: ['~/assets/css/main.css'],
 
