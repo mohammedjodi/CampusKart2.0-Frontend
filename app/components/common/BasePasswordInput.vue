@@ -27,12 +27,14 @@
         :aria-invalid="!!error"
         :aria-describedby="error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined"
         class="base-input__field"
+        :SeePass="SeePass"
         @input="emit('update:modelValue', $event.target.value)"
         @blur="emit('blur', $event)"
         @focus="emit('focus', $event)"
         />
 
       <button
+        v-if="SeePass"
         type="button"
         class="base-input__icon base-input__toggle"
         :aria-label="isVisible ? 'Hide password' : 'Show password'"
@@ -67,6 +69,7 @@ const props = defineProps({
   autocomplete: { type: String, default: 'current-password' },
   disabled: { type: Boolean, default: false },
   required: { type: Boolean, default: false },
+  SeePass:{ type: Boolean, default:true}
 })
 
 const emit = defineEmits(['update:modelValue', 'blur', 'focus'])
