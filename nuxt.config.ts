@@ -3,7 +3,14 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-
+   app: {
+    head: {
+      title: 'CampusKart - Buy & Sell On Campus',
+      link: [
+        { rel: 'icon', type: 'image/png', href: '/images/Logo.png' }
+      ]
+    }
+  },
   devtools: {
     enabled: true,
   },

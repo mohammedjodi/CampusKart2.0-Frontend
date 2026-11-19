@@ -1,7 +1,9 @@
 <template>
   <NuxtLayout>
     <Toaster :position="toastPosition" :rich-colors="true" :close-button="true"  :gap="8" :expand="false"/>
-    <NuxtPage />
+      <!-- Whole page loading while we restore user -->
+    <CommonLoadingState v-if="authStore.loading" variant="fullPage"/>
+    <NuxtPage v-else/>
   </NuxtLayout>
 </template>
 
@@ -9,17 +11,29 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Toaster } from 'vue-sonner'
+import { useAuthStore } from '~/stores/auth'
+
 import 'vue-sonner/style.css'
 
 const windowWidth = ref(1024)
+const authStore =  useAuthStore()
+const { loading } = storeToRefs(authStore)
 
 const updateWidth = () => {
   windowWidth.value = window.innerWidth
 }
 
+async function updateUser (){
+
+    if (!authStore.user) {
+      await authStore.fetchUser()
+    }
+}
+  
 onMounted(() => {
   updateWidth()
   window.addEventListener('resize', updateWidth)
+  updateUser()
 })
 
 onUnmounted(() => {

@@ -2,7 +2,7 @@
 import { ShoppingBag } from 'lucide-vue-next'
 
 const props = defineProps({
-  message: { type: String, default: 'Loading products...' },
+  message: { type: String, default: 'Loading Page...' },
   variant: { type: String, default: 'cards' }, // 'cards' | 'spinner' | 'list'
   count: { type: Number, default: 6 },
 })

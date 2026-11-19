@@ -27,7 +27,7 @@
 
 <script setup>
 import { Check } from 'lucide-vue-next'
-
+ 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   label: { type: String, default: '' },

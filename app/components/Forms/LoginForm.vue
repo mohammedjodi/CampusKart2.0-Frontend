@@ -1,13 +1,7 @@
-<!-- components/forms/LoginForm.vue
-    * UI-only login form.
-    * Validates locally, emits { login, password, remember } on submit.
-    * No API calls, no store calls, no $api.
-    * Parent controls loading and serverError.
--->
+<!-- components/forms/LoginForm.vue -->
 
 <template>
   <form class="login-form" @submit.prevent="onSubmit" novalidate>
-    <!-- Server error, e.g. Invalid credentials from Laravel -->
     <CommonBaseAlert
       v-if="serverError"
       type="error"
@@ -20,7 +14,7 @@
       label="Email or Username"
       placeholder="you@university.edu or username"
       required
-      :error="errors.login"
+      :error="displayErrors.login"
       :disabled="loading"
       autocomplete="username"
       @blur="validateField('login')"
@@ -35,7 +29,7 @@
       label="Password"
       placeholder="Enter your password"
       required
-      :error="errors.password"
+      :error="displayErrors.password"
       :disabled="loading"
       autocomplete="current-password"
       @blur="validateField('password')"
@@ -72,21 +66,23 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { computed, reactive, watch } from 'vue'
 import { Mail } from 'lucide-vue-next'
 
-const props = defineProps({
-  loading: {
-    type: Boolean,
-    default: false,
-  },
-  serverError: {
-    type: String,
-    default: '',
-  },
+definePageMeta({
+  middleware: 'auth',
+  layout:'auth'
+
 })
 
-const emit = defineEmits(['submit'])
+
+const props = defineProps({
+  loading: { type: Boolean, default: false },
+  serverError: { type: String, default: '' },
+  serverErrors: { type: Object, default: () => ({}) }, // <-- NEW: Laravel 422
+})
+
+const emit = defineEmits(['submit', 'clear-server-error'])
 
 const form = reactive({
   login: '',
@@ -94,10 +90,31 @@ const form = reactive({
   remember: false,
 })
 
+// Vue internal validation
 const errors = reactive({
   login: '',
   password: '',
 })
+
+// MERGED: Laravel wins, else Vue
+// For login field, check BOTH email and username because backend can return either
+const displayErrors = computed(() => {
+  const loginServerMsg = props.serverErrors?.email?.[0] || props.serverErrors?.username?.[0] || props.serverErrors?.login?.[0]
+  return {
+    login: loginServerMsg || errors.login,
+    password: props.serverErrors?.password?.[0] || errors.password,
+  }
+})
+
+// Clear Laravel error when user types again
+watch(form, (newForm, oldForm) => {
+  if (newForm.login !== oldForm.login && (props.serverErrors?.email || props.serverErrors?.username || props.serverErrors?.login)) {
+    emit('clear-server-error', 'login')
+  }
+  if (newForm.password !== oldForm.password && props.serverErrors?.password) {
+    emit('clear-server-error', 'password')
+  }
+}, { deep: true })
 
 function validateField(field) {
   if (field === 'login') {
@@ -116,7 +133,6 @@ function validateAll() {
 
 function onSubmit() {
   if (!validateAll()) return
-
   emit('submit', {
     login: form.login.trim(),
     password: form.password,
@@ -132,14 +148,12 @@ function onSubmit() {
   gap: 16px;
   width: 100%;
 }
-
 .login-form__row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
-
 .login-form__link {
   font-family: var(--font-primary);
   font-size: 13px;
@@ -148,18 +162,15 @@ function onSubmit() {
   text-decoration: none;
   white-space: nowrap;
 }
-
 .login-form__link:hover {
   text-decoration: underline;
 }
-
 .login-form__footer {
   font-family: var(--font-primary);
   font-size: 13px;
   color: var(--ck-text-muted);
   text-align: center;
 }
-
 .login-form__link--bold {
   font-size: 13px;
 }

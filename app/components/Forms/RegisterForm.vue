@@ -1,15 +1,7 @@
-<!-- components/forms/RegistrationForm.vue
-    * Layout matches design screenshot.
-    * Inputs unchanged: BaseInput / BasePasswordInput / BaseSelect / ImageUploader.
-    * Validation + payload unchanged.
--->
-
 <template>
   <form class="register-form" @submit.prevent="onFinalSubmit" novalidate>
-    <!-- Header -->
     <h1 class="register-form__title">Registration</h1>
 
-    <!-- Steps - dots on a line, label under each dot -->
     <div class="register-form__steps">
       <div
         v-for="(step, i) in steps"
@@ -22,74 +14,38 @@
       </div>
     </div>
 
-    <!-- Section title -->
     <h2 class="register-form__section">{{ steps[currentStep - 1].title }}</h2>
 
-    <BaseAlert v-if="serverError" type="error" title="Registration failed" :message="serverError" />
+    <CommonBaseAlert v-if="serverError" type="error" title="Registration failed" :message="serverError" />
 
-    <!-- STEP 1: Personal - inputs unchanged -->
+    <!-- STEP 1: Personal -->
     <div v-if="currentStep === 1" class="register-form__fields">
-      <CommonBaseInput v-model="form.first_name" label="First Name" placeholder="John" required :error="errors.first_name" :disabled="loading" autocomplete="given-name" @blur="validateStep1" />
-      <CommonBaseInput v-model="form.last_name" label="Last Name" placeholder="Doe" required :error="errors.last_name" :disabled="loading" autocomplete="family-name" @blur="validateStep1" />
-      <CommonBaseInput v-model="form.phone" label="Phone Number" placeholder="0803 123 4567" type="tel" required :error="errors.phone" :disabled="loading" autocomplete="tel" @blur="validateStep1" />
-      <CommonImageUploader v-model="form.avatar" label="Avatar (optional)" placeholder="Click to upload profile image" hint="JPG, JPEG or PNG, max 2MB" :error="errors.avatar" />
+      <CommonBaseInput v-model="form.first_name" label="First Name" placeholder="John" required :error="displayErrors.first_name" :disabled="loading" autocomplete="given-name" @blur="validateStep1" />
+      <CommonBaseInput v-model="form.last_name" label="Last Name" placeholder="Doe" required :error="displayErrors.last_name" :disabled="loading" autocomplete="family-name" @blur="validateStep1" />
+      <CommonBaseInput v-model="form.phone" label="Phone Number" placeholder="0803 123 4567" type="tel" required :error="displayErrors.phone" :disabled="loading" autocomplete="tel" @blur="validateStep1" />
+      <CommonImageUploader v-model="form.avatar" label="Avatar (optional)" placeholder="Click to upload profile image" hint="JPG, JPEG or PNG, max 2MB" :error="displayErrors.avatar" />
     </div>
 
-    <!-- STEP 2: Campus - inputs unchanged -->
+    <!-- STEP 2: Campus -->
     <div v-if="currentStep === 2" class="register-form__fields">
-      <CommonBaseSelect v-model="form.state_id" label="State" placeholder="Select your state" required :options="stateOptions" :error="errors.state_id" :disabled="loading" @update:modelValue="onStateChange" />
-      <CommonBaseSelect v-model="form.university_id" label="University" :placeholder="universityPlaceholder" required :options="universityOptions" :error="errors.university_id" :disabled="loading || !form.state_id || loadingUniversities" :hint="loadingUniversities ? 'Loading universities...' : ''" />
-
-    <CommonBaseTextarea
-        v-model="form.bio"
-        label="Bio"
-        placeholder="Tell others a little about yourself..."
-        :error="errors.bio"
-        :disabled="loading"
-        :rows="3"
-        :maxlength="500"
-        hint="Optional"
-    />
-
+      <CommonBaseSelect v-model="form.state_id" label="State" placeholder="Select your state" required :options="stateOptions" :error="displayErrors.state_id" :disabled="loading" @update:modelValue="onStateChange" />
+      <CommonBaseSelect v-model="form.university_id" label="University" :placeholder="universityPlaceholder" required :options="universityOptions" :error="displayErrors.university_id" :disabled="loading || !form.state_id || loadingUniversities" :hint="loadingUniversities ? 'Loading universities...' : ''" />
+      <CommonBaseTextarea v-model="form.bio" label="Bio" placeholder="Tell others a little about yourself..." :error="displayErrors.bio" :disabled="loading" :rows="3" :maxlength="500" hint="Optional" />
     </div>
 
-    <!-- STEP 3: Account - inputs unchanged -->
+    <!-- STEP 3: Account -->
     <div v-if="currentStep === 3" class="register-form__fields">
-      <CommonBaseInput v-model="form.email" label="Email Address" placeholder="you@university.edu" type="email" required :error="errors.email" :disabled="loading" autocomplete="email" @blur="validateStep3" />
-      <CommonBasePasswordInput v-model="form.password" label="Password" placeholder="Create a strong password" required :error="errors.password" :disabled="loading" autocomplete="new-password" hint="8+ chars, uppercase, lowercase, number, special char" @blur="validateStep3" />
-      <CommonBasePasswordInput v-model="form.password_confirmation" label="Confirm Password" placeholder="Repeat password" required :error="errors.password_confirmation" :disabled="loading" autocomplete="new-password" @blur="validateStep3" :SeePass="false" />
+      <CommonBaseInput v-model="form.email" label="Email Address" placeholder="you@university.edu" type="email" required :error="displayErrors.email" :disabled="loading" autocomplete="email" @blur="validateStep3" />
+      <CommonBaseInput v-model="form.username" label="Username" placeholder="user@12" required :error="displayErrors.username" :disabled="loading" autocomplete="username" @blur="validateStep3" />
+      <CommonBasePasswordInput v-model="form.password" label="Password" placeholder="Create a strong password" required :error="displayErrors.password" :disabled="loading" autocomplete="new-password" hint="8+ chars, uppercase, lowercase, number, special char" @blur="validateStep3" />
+      <CommonBasePasswordInput v-model="form.password_confirmation" label="Confirm Password" placeholder="Repeat password" required :error="displayErrors.password_confirmation" :disabled="loading" autocomplete="new-password" @blur="validateStep3" :SeePass="false" />
     </div>
 
-    <!-- Navigation - matches screenshot: one full-width pill button -->
     <div class="register-form__nav">
-        <button v-if="currentStep > 1" type="button" class="register-form__back" :disabled="loading" @click="goBack">
-            ← Back
-        </button>
-
-        <CommonBaseButton
-            v-if="currentStep < 3"
-            type="button"
-            variant="primary"
-            size="md"
-            class="register-form__next"
-            :disabled="loading"
-            @click="goNext"
-        >
-            Next →
-        </CommonBaseButton>
-
-        <CommonBaseButton
-            v-else
-            type="submit"
-            variant="primary"
-            size="md"
-            class="register-form__next"
-            :loading="loading"
-            :disabled="loading"
-        >
-            Create Account
-        </CommonBaseButton>
-        </div>
+      <button v-if="currentStep > 1" type="button" class="register-form__back" :disabled="loading" @click="goBack">← Back</button>
+      <CommonBaseButton v-if="currentStep < 3" type="button" variant="primary" size="md" class="register-form__next" :disabled="loading" @click="goNext">Next →</CommonBaseButton>
+      <CommonBaseButton v-else type="submit" variant="primary" size="md" class="register-form__next" :loading="loading" :disabled="loading">Create Account</CommonBaseButton>
+    </div>
 
     <p class="register-form__footer">
       Already have an account?
@@ -99,22 +55,18 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 
 const props = defineProps({
   loading: { type: Boolean, default: false },
   serverError: { type: String, default: '' },
-  states: { type: Array, default: () => [
-    { id: 1, name: 'Lagos' },
-    { id: 2, name: 'Abuja FCT' },
-    { id: 3, name: 'Oyo' },
-    { id: 4, name: 'Kano' },
-  ] },
+  serverErrors: { type: Object, default: () => ({}) }, // <-- NEW: Laravel 422 errors
+  states: { type: Array, default: () => [] },
   universities: { type: Array, default: () => [] },
   loadingUniversities: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['submit', 'state-change'])
+const emit = defineEmits(['submit', 'state-change', 'clear-server-error'])
 
 const currentStep = ref(1)
 const steps = [
@@ -123,30 +75,55 @@ const steps = [
   { short: 'Account Info', title: 'Account Information' },
 ]
 
-// One shared state for all 3 steps - unchanged
 const form = reactive({
-  first_name: '',
-  last_name: '',
-  phone: '',
-  avatar: null,
-  state_id: '',
-  university_id: '',
-  email: '',
-  bio:'',
-  password: '',
-  password_confirmation: '',
+  first_name: '', last_name: '', phone: '', avatar: null,
+  state_id: '', university_id: '', email: '', username: '', bio: '',
+  password: '', password_confirmation: '',
 })
 
+// Internal Vue validation errors (your existing logic)
 const errors = reactive({
   first_name: '', last_name: '', phone: '', avatar: '',
   state_id: '', university_id: '', bio: '',
-  email: '', password: '', password_confirmation: '',
+  email: '', username: '', password: '', password_confirmation: '',
 })
 
+// Which step does each field belong to?
+const fieldToStep = {
+  first_name: 1, last_name: 1, phone: 1, avatar: 1,
+  state_id: 2, university_id: 2, bio: 2,
+  email: 3, username: 3, password: 3, password_confirmation: 3,
+}
+
+// Laravel error wins, else Vue internal error
+const displayErrors = computed(() => {
+  const out = {}
+  for (const key in errors) {
+    const serverMsg = props.serverErrors?.[key]?.[0]
+    out[key] = serverMsg || errors[key]
+  }
+  return out
+})
+
+// Auto-jump to first step with Laravel error 
+watch(() => props.serverErrors, (newErrors) => {
+  if (!newErrors || !Object.keys(newErrors).length) return
+  const firstField = Object.keys(newErrors)[0]
+  const step = fieldToStep[firstField]
+  if (step) currentStep.value = step
+}, { deep: true })
+
+// Clear Laravel error when user types again in that field
+watch(form, (newForm, oldForm) => {
+  for (const key in newForm) {
+    if (newForm[key] !== oldForm[key] && props.serverErrors?.[key]) {
+      emit('clear-server-error', key)
+    }
+  }
+}, { deep: true })
+
 const stateOptions = computed(() => props.states.map(s => ({ value: s.id, label: s.name })))
-
 const universityOptions = computed(() => props.universities.map(u => ({ value: u.id, label: u.name })))
-
 const universityPlaceholder = computed(() => {
   if (!form.state_id) return 'Select a state first'
   if (props.loadingUniversities) return 'Loading universities...'
@@ -161,21 +138,14 @@ function onStateChange(value) {
   if (value) emit('state-change', value)
 }
 
-// Validate Personal Information 
 function validateStep1() {
   errors.first_name = form.first_name.trim().length >= 3 ? '' : 'First name must be at least 3 characters.'
   errors.last_name = form.last_name.trim().length >= 3 ? '' : 'Last name must be at least 3 characters.'
-
   const cleaned = form.phone.replace(/[\s+-]/g, '')
-
-  errors.phone = /^(\+?234|0)?[789]\d{9}$/.test(cleaned) 
-                    ? '' 
-                    : 'Enter a valid phone number.'
-
+  errors.phone = /^(\+?234|0)?[789]\d{9}$/.test(cleaned) ? '' : 'Enter a valid phone number.'
   return !errors.first_name && !errors.last_name && !errors.phone
 }
 
-// Validate Campus Information 
 function validateStep2() {
   errors.state_id = form.state_id ? '' : 'Please select your state.'
   errors.university_id = form.university_id ? '' : 'Please select your university.'
@@ -183,18 +153,15 @@ function validateStep2() {
   return !errors.state_id && !errors.university_id && !errors.bio
 }
 
-// Validate  Account Information 
 function validateStep3() {
   const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
   errors.email = emailRe.test(form.email.trim()) ? '' : 'Enter a valid email address.'
-
+  errors.username = form.username ? '' : 'Username is Required'
   const pw = form.password
   const hasUpper = /[A-Z]/.test(pw)
   const hasLower = /[a-z]/.test(pw)
   const hasNumber = /\d/.test(pw)
   const hasSpecial = /[^A-Za-z0-9]/.test(pw)
-
   errors.password = pw.length >= 8 && hasUpper && hasLower && hasNumber && hasSpecial
     ? '' : 'Password must be 8+ chars with uppercase, lowercase, number and special character.'
   errors.password_confirmation = form.password_confirmation === pw && pw ? '' : 'Passwords do not match.'
@@ -219,13 +186,13 @@ function onFinalSubmit() {
     avatar: form.avatar,
     university_id: form.university_id,
     email: form.email.trim(),
+    username: form.username.trim(),
     bio: form.bio.trim(),
     password: form.password,
     password_confirmation: form.password_confirmation,
   })
 }
 </script>
-
 <style scoped>
 .register-form {
   display: flex;

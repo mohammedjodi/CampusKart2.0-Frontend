@@ -18,10 +18,37 @@
             </p>
 
             <!-- Actions - Desktop -->
-            <div class="navbar__actions">
-                <NuxtLink to="/login" class="navbar__link">Sign in</NuxtLink>
-                <span class="navbar__divider">|</span>
-                <NuxtLink to="/register" class="navbar__link">Registration</NuxtLink>
+            <div class="navbar__actions icon__spacing">
+                <!-- Loading: prevent flicker Guest -> Auth -->
+                <template v-if="authStore.loading">
+                    <span class="navbar__skeleton" />
+                </template>
+
+                <!-- GUEST -->
+                <template v-else-if="!authStore.isAuthenticated">
+                    <NuxtLink to="/login" class="navbar__link">Sign in</NuxtLink>
+                    <span class="navbar__divider">|</span>
+                    <NuxtLink to="/register" class="navbar__link">Registration</NuxtLink>
+                </template>
+
+                <!-- AUTHENTICATED -->
+                <template v-else>
+                    <NuxtLink to="/messages" class="navbar__link navbar__link--icon">
+                        <MessageCircle :size="19" /> 
+                    </NuxtLink>
+                    <NuxtLink to="/saved" class="navbar__link navbar__link--icon">
+                        <Bookmark :size="19" />
+                    </NuxtLink>
+
+                    <NuxtLink to="/notifications" class="navbar__link navbar__link--icon">
+                        <Bell :size="19" />
+                    </NuxtLink>
+                     <NuxtLink to="/profile" class="navbar__link navbar__link--icon">
+                         <User :size="20" />
+                    </NuxtLink>
+                    <button class="navbar__logout" @click="onLogout"><LogOut :size="20" /></button>
+                </template>
+
                 <NuxtLink to="/products/create" class="navbar__sell">SELL</NuxtLink>
             </div>
 
@@ -47,13 +74,43 @@
                     </button>
                 </div>
 
+                <!-- AUTH SIDEBAR HEADER -->
+                <!-- <div v-if="authStore.isAuthenticated" class="sidebar__user">
+                    <img v-if="authStore.user?.avatar_url" :src="authStore.user.avatar_url" class="sidebar__avatar" alt="avatar" />
+                    <span v-else class="sidebar__avatar sidebar__avatar--fallback">{{ authStore.user?.first_name?.[0] || 'U' }}</span>
+                    <div class="sidebar__user-info">
+                        <p class="sidebar__user-name">{{ authStore.fullName }}</p>
+                        <p class="sidebar__user-email">{{ authStore.user?.email }}</p>
+                    </div>
+                </div> -->
+
                 <div class="sidebar__links">
-                    <NuxtLink to="/login" class="sidebar__link" @click="close">
-                        <User :size="20" /> Sign in
-                    </NuxtLink>
-                    <NuxtLink to="/register" class="sidebar__link" @click="close">
-                        <UserPlus :size="20" /> Registration
-                    </NuxtLink>
+                    <!-- GUEST LINKS -->
+                    <template v-if="!authStore.isAuthenticated">
+                        <NuxtLink to="/login" class="sidebar__link" @click="close">
+                            <User :size="20" /> Sign in
+                        </NuxtLink>
+                        <NuxtLink to="/register" class="sidebar__link" @click="close">
+                            <UserPlus :size="20" /> Registration
+                        </NuxtLink>
+                    </template>
+
+                    <!-- AUTH LINKS -->
+                    <template v-else>
+                        <NuxtLink to="/profile" class="sidebar__link" @click="close">
+                            <User :size="20" /> My Profile
+                        </NuxtLink>
+                        <NuxtLink to="/my-ads" class="sidebar__link" @click="close">
+                            <LayoutGrid :size="20" /> My Ads
+                        </NuxtLink>
+                        <NuxtLink to="/messages" class="sidebar__link" @click="close">
+                            <MessageCircle :size="20" /> Messages
+                        </NuxtLink>
+                        <button class="sidebar__link sidebar__link--button" @click="onLogoutAndClose">
+                            <LogOut :size="20" /> Logout
+                        </button>
+                    </template>
+
                     <NuxtLink to="/products/create" class="sidebar__link sidebar__link--green" @click="close">
                         <Plus :size="20" /> Post an Ad
                     </NuxtLink>
@@ -78,18 +135,27 @@
 
 <script setup>
 import { ref, watch, onUnmounted } from 'vue'
-import { Menu, X, User, UserPlus, Plus } from 'lucide-vue-next'
+import { Menu, X, User, UserPlus, Plus, MessageCircle, LayoutGrid, LogOut, Bookmark , Bell  } from 'lucide-vue-next'
+import { useAuthStore } from '~/stores/auth'
 
+const authStore = useAuthStore()
 const isOpen = ref(false)
 
 const close = () => { isOpen.value = false }
 
-// Handle Escape key to close the sidebar
+async function onLogout() {
+  await authStore.logout()
+}
+
+async function onLogoutAndClose() {
+  close()
+  await authStore.logout()
+}
+
 const onKeydown = (e) => {
   if (e.key === 'Escape') close()
 }
 
-// Watch for changes in isOpen to manage body overflow and keydown event listener
 watch(isOpen, (val) => {
   document.body.style.overflow = val ? 'hidden' : ''
   if (val) {
@@ -99,7 +165,6 @@ watch(isOpen, (val) => {
   }
 })
 
-// Cleanup on component unmount
 onUnmounted(() => {
   document.body.style.overflow = ''
   window.removeEventListener('keydown', onKeydown)
@@ -109,10 +174,11 @@ onUnmounted(() => {
 <style scoped>
 .navbar {
     width: 100%;
-    border-bottom: 1px solid var(--color-logo);
+    /* border-bottom: 1px solid var(--color-logo); */
     position: sticky;
     top: 0;
     z-index: 50;
+    background: var(--color-nav-bg);
 }
 
 .navbar__content {
@@ -160,9 +226,62 @@ onUnmounted(() => {
     font-size: 13px;
 }
 
-.navbar__link { color: var(--ck-text-light); text-decoration: none; white-space: nowrap; }
+.navbar__link { color: var(--ck-text-light); text-decoration: none; white-space: nowrap; display: flex; align-items: center; gap:5px; }
 .navbar__link:hover { color: var(--ck-green); }
+.navbar__link--icon { font-weight: 600; }
 .navbar__divider { color: var(--ck-text-light-muted); }
+
+
+.icon__spacing{
+    gap:25px;
+}
+.navbar__user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--ck-text);
+    max-width: 180px;
+}
+.navbar__avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.navbar__avatar--fallback {
+    background: var(--ck-green);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+}
+.navbar__username {
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.navbar__logout {
+    background: none;
+    border: none;
+    color: var(--ck-text-light);
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.navbar__logout:hover { color: #e11d48; }
+.navbar__skeleton {
+    width: 140px;
+    height: 28px;
+    background: #eee;
+    border-radius: 999px;
+    display: block;
+}
 
 .navbar__sell {
     display: flex;
@@ -221,7 +340,6 @@ onUnmounted(() => {
 
 .sidebar__close {
     border: none;
-    /* background: var(--ck-primaryp-dark); */
     color: var(--ck-text);
     width: 36px;
     height: 36px;
@@ -231,6 +349,34 @@ onUnmounted(() => {
     justify-content: center;
     cursor: pointer;
 }
+
+.sidebar__user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid var(--color-logo);
+    background: #f8f9fa;
+}
+.sidebar__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.sidebar__avatar--fallback {
+    background: var(--ck-green);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+}
+.sidebar__user-info { min-width: 0; }
+.sidebar__user-name { font-weight: 700; font-size: 14px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar__user-email { font-size: 12px; color: var(--ck-text-muted); margin: 2px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .sidebar__links {
     display: flex;
@@ -247,12 +393,20 @@ onUnmounted(() => {
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    font-family: inherit;
 }
 
 .sidebar__link--green {
     color: var(--ck-green);
     font-weight: 700;
 }
+
+.sidebar__link--button:hover { color: #e11d48; }
 
 .sidebar__divider {
     height: 1px;
