@@ -1,39 +1,26 @@
+<!-- pages/index.vue - your home page after register -->
 <template>
-    <br>
-    <!-- Base Buttons -->
-    <BaseButton variant="primary" size="md" @click="postAd" >SELL</BaseButton>
-    <BaseButton variant="outline" :loading="true" size="lg">View</BaseButton>
-    <BaseButton variant="primary" size="lg" :loading="true" >View</BaseButton>
-    <BaseButton variant="danger" size="lg" :loading="false" > 
-        <template #icon>
-            <Trash class="w-4 h-4 mr-2" />
-        </template>
-        Delete
-    </BaseButton>
-    <!-- Base Inputs -->
-     <BaseInput v-model="email" label="Email" type="email" placeholder="you@school.edu" :error="emailError" required />
-
-    <BaseInput v-model="search" label="Search" placeholder="Search products..." required>
-        <template #leftIcon> <Search/> </template>
-    </BaseInput>
-        {{ search }}
-    
+  <div>
+    <h1>Welcome, {{ user?.first_name }}</h1>
+    <p>{{ user?.email }}</p>
+    <p>{{ user?.phone }}</p>
+    <p>{{ user?.bio }}</p>
+    <!-- <img v-if="user?.avatar" :src="user.avatar" /> -->
+  </div>
 </template>
+
 <script setup>
-import { Trash , Search } from 'lucide-vue-next';
-import BaseButton from '~/components/common/BaseButton.vue'
-import BaseInput from '~/components/common/BaseInput.vue';
+import { storeToRefs } from 'pinia'
+import { useAuthStore } from '~/stores/auth'
 
-const emailError  = ref("Error");
+definePageMeta({ layout: 'default' , })
+useHead({
+  //  title: "CampusKart"
+})
 
-const search= ref("");
-
-console.log(search.value)
-
-
-function postAd($event){
-    console.log($event);
-}
+const authStore = useAuthStore()
+const { user } = storeToRefs(authStore)
 
 
+console.log('Logged in user after register:', user.value)
 </script>
