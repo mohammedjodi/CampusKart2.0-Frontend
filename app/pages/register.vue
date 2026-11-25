@@ -18,18 +18,14 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import { useAuthStore } from '~/stores/auth'
 import { useCkToast } from '~/composables/useCKToast'
 
-definePageMeta({ layout: 'auth' , middleware:'guest' })
-useHead({ title:"register" })
-
-
+definePageMeta({ layout: 'auth', middleware: 'guest' })
+useHead({ title: 'register' })
 
 const { getStates, getUniversities } = useLocation()
-const { success, error } = useCkToast()
+const { success } = useCkToast()
 const { register } = useAuth()
-const authStore = useAuthStore()
 
 const states = ref([])
 const universities = ref([])
@@ -50,13 +46,11 @@ async function onStateChange(stateId) {
   universities.value = []
   serverError.value = ''
   if (!stateId) return
-    loadingUniversities.value = true
+  loadingUniversities.value = true
   try {
     universities.value = (await getUniversities(stateId)) || []
-
   } catch (e) {
     serverError.value = 'Could not load universities for this state.'
-
   } finally {
     loadingUniversities.value = false
   }
@@ -86,19 +80,19 @@ async function onRegister(payload) {
     if (payload.bio) formData.append('bio', payload.bio)
     if (payload.avatar) formData.append('avatar', payload.avatar)
 
-    const res = await register(formData)
+    await register(formData)
 
-    if (res.status === 201) {
-      await navigateTo('/login')
-    }
+    await navigateTo('/')
+
   } catch (e) {
     if (e.response?.status === 422) {
       // Fortify validation errors -> per-field
       serverErrors.value = e.response?.data?.errors || {}
-      serverError.value =  "Check your inputs"
       // If no field errors, show general message
       if (!Object.keys(serverErrors.value).length) {
         serverError.value = e.response?.data?.message || 'Please check your inputs.'
+      } else {
+        serverError.value = 'Check your inputs'
       }
     } else {
       serverError.value = e.response?.data?.message || 'Registration failed. Please try again.'

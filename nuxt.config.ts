@@ -3,7 +3,9 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-   app: {
+  ssr: false,
+  spaLoadingTemplate: false,
+  app: {
     head: {
       title: 'CampusKart - Buy & Sell On Campus',
       link: [

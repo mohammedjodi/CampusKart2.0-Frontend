@@ -2,9 +2,11 @@
 import { defineStore } from 'pinia'
 
 export const useAuthStore = defineStore('auth', {
+  // Global state for authUser 
   state: () => ({
     user: null,
-    loading: true,
+    loading: false,
+    initialized: false,
   }),
 
   getters: {
@@ -12,46 +14,23 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
+    
     setUser(user) {
       this.user = user
+      this.initialized = true
     },
 
     clearUser() {
       this.user = null
+      this.initialized = true
     },
 
-    // stores/auth.js
-    async fetchUser() {
-        const { $api } = useNuxtApp()
-        try {
-            this.loading = true
-            const res = await $api.get('/api/user')
-            console.log('fetchUser RAW response:', res.data) // <-- add this
-            this.user = res.data?.data || res.data
-            return this.user
-        } catch (e) {
-            console.log('fetchUser FAILED:', e.response?.status, e.response?.data) // <-- add this
-            this.user = null
-            return null
-        } finally {
-            this.loading = false
-        }
+    setLoading(value) {
+      this.loading = value
     },
 
-    async logout() {
-      const { logout } = useAuth()
-
-      try {
-
-          await logout()
-
-      } catch (e) {
-          console.warn('Logout failed, clearing locally', e)
-      } finally {
-          
-          this.clearUser()
-          await navigateTo('/login')
-      }
-    }
+    setInitialized(value) {
+      this.initialized = value
+    },
   },
 })

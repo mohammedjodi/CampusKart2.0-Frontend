@@ -85,7 +85,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'blur', 'focus'])
 
 // Auto id if not provided, so label always works
-const inputId = computed(() => props.id || `input-${Math.random().toString(36).slice(2, 8)}`)
+const inputId = computed(() => props.id || useId())
 </script>
 
 <style scoped>

@@ -20,12 +20,12 @@
             <!-- Actions - Desktop -->
             <div class="navbar__actions icon__spacing">
                 <!-- Loading: prevent flicker Guest -> Auth -->
-                <template v-if="authStore.loading">
+                <template v-if="loading">
                     <span class="navbar__skeleton" />
                 </template>
 
                 <!-- GUEST -->
-                <template v-else-if="!authStore.isAuthenticated">
+                <template v-else-if="!isAuthenticated">
                     <NuxtLink to="/login" class="navbar__link">Sign in</NuxtLink>
                     <span class="navbar__divider">|</span>
                     <NuxtLink to="/register" class="navbar__link">Registration</NuxtLink>
@@ -34,7 +34,7 @@
                 <!-- AUTHENTICATED -->
                 <template v-else>
                     <NuxtLink to="/messages" class="navbar__link navbar__link--icon">
-                        <MessageCircle :size="19" /> 
+                        <MessageCircle :size="19" />
                     </NuxtLink>
                     <NuxtLink to="/saved" class="navbar__link navbar__link--icon">
                         <Bookmark :size="19" />
@@ -74,19 +74,19 @@
                     </button>
                 </div>
 
-                <!-- AUTH SIDEBAR HEADER -->
-                <!-- <div v-if="authStore.isAuthenticated" class="sidebar__user">
-                    <img v-if="authStore.user?.avatar_url" :src="authStore.user.avatar_url" class="sidebar__avatar" alt="avatar" />
-                    <span v-else class="sidebar__avatar sidebar__avatar--fallback">{{ authStore.user?.first_name?.[0] || 'U' }}</span>
+                <!-- AUTH SIDEBAR HEADER - now works, uses useAuth -->
+                <div v-if="isAuthenticated" class="sidebar__user">
+                    <img v-if="user?.avatar_url" :src="user.avatar_url" class="sidebar__avatar" alt="avatar" />
+                    <span v-else class="sidebar__avatar sidebar__avatar--fallback">{{ user?.first_name?.[0] || 'U' }}</span>
                     <div class="sidebar__user-info">
-                        <p class="sidebar__user-name">{{ authStore.fullName }}</p>
-                        <p class="sidebar__user-email">{{ authStore.user?.email }}</p>
+                        <p class="sidebar__user-name">{{ fullName }}</p>
+                        <p class="sidebar__user-email">{{ user?.email }}</p>
                     </div>
-                </div> -->
+                </div>
 
                 <div class="sidebar__links">
                     <!-- GUEST LINKS -->
-                    <template v-if="!authStore.isAuthenticated">
+                    <template v-if="!isAuthenticated">
                         <NuxtLink to="/login" class="sidebar__link" @click="close">
                             <User :size="20" /> Sign in
                         </NuxtLink>
@@ -134,22 +134,29 @@
 </template>
 
 <script setup>
-import { ref, watch, onUnmounted } from 'vue'
-import { Menu, X, User, UserPlus, Plus, MessageCircle, LayoutGrid, LogOut, Bookmark , Bell  } from 'lucide-vue-next'
-import { useAuthStore } from '~/stores/auth'
+import { ref, watch, onUnmounted, computed } from 'vue'
+import { Menu, X, User, UserPlus, Plus, MessageCircle, LayoutGrid, LogOut, Bookmark, Bell } from 'lucide-vue-next'
 
-const authStore = useAuthStore()
+// ONE source: useAuth (API) -> authStore (state)
+const { user, loading, isAuthenticated, logout } = useAuth()
+
 const isOpen = ref(false)
 
 const close = () => { isOpen.value = false }
 
+// fullName didn't exist on store, so compute it here from user
+const fullName = computed(() => {
+  if (!user.value) return ''
+  return [user.value.first_name, user.value.last_name].filter(Boolean).join(' ') || user.value.username || user.value.email || ''
+})
+
 async function onLogout() {
-  await authStore.logout()
+  await logout() // logout() in useAuth already clears store + navigates to /login
 }
 
 async function onLogoutAndClose() {
   close()
-  await authStore.logout()
+  await logout()
 }
 
 const onKeydown = (e) => {
