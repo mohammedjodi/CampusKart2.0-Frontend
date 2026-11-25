@@ -1,6 +1,6 @@
 // 
 import axios from 'axios'
-
+// axios api instace for global availability.....
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
 

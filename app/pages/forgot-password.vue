@@ -1,10 +1,10 @@
+<!-- forgot-password.vue -->
 <template>
   <div class="forgot">
     <div class="forgot__card">
       <h1 class="forgot__title">Forgot Password?</h1>
       <p class="forgot__subtitle">Enter your email and we'll send you a reset link.</p>
 
-      <!-- Using BaseAlert for both states -->
       <CommonBaseAlert
         v-if="sent"
         type="success"
@@ -54,6 +54,7 @@ definePageMeta({
   layout: 'auth',
   middleware: 'guest'
 })
+useHead({title:"Forgot Password"})
 
 const { forgotPassword } = useAuth()
 
@@ -69,7 +70,10 @@ async function onSubmit() {
     await forgotPassword(email.value)
     sent.value = true
   } catch (e) {
-    error.value = e.response?.data?.message || 'Something went wrong. Try again.'
+    // Show errors
+    error.value = e.response?.data?.errors?.email?.[0]
+      || e.response?.data?.message
+      || 'Something went wrong. Try again.'
   } finally {
     loading.value = false
   }

@@ -19,15 +19,13 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useAuthStore } from '~/stores/auth'
 import { useCkToast } from '~/composables/useCKToast'
 
-definePageMeta({ layout: 'auth' , middleware:'guest' , title:"Login" }) 
-useHead({ title:"login" })
+definePageMeta({ layout: 'auth', middleware: 'guest' })
+useHead({ title: 'login' })
 
 const { success } = useCkToast()
-const { login } = useAuth() 
-const authStore = useAuthStore()
+const { login, user } = useAuth()
 
 const loading = ref(false)
 const serverError = ref('')
@@ -46,10 +44,6 @@ function onClearServerError(field) {
   }
 }
 
-function isEmail(value) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-}
-
 async function onLogin(payload) {
   loading.value = true
   serverError.value = ''
@@ -62,30 +56,20 @@ async function onLogin(payload) {
       password: payload.password,
       remember: payload.remember,
     }
-
-    // if (isEmail(payload.login)) {
-    //   data.email = payload.login
-    // } else {
-    //   data.username = payload.login
-    // }
-
-    const res = await login(data)
-
-    // check which success return we got from Fortify
-    if (res.status === 200 || res.status === 201 || res.status === 204) {
-      await authStore.fetchUser()
-      success('Welcome back!')
-      await navigateTo('/')
-    }
+    // 
+    await login(data)
+    console.log(user.value)
+    success('Welcome back!')
+    await navigateTo('/')
   } catch (e) {
+
     if (e.response?.status === 422) {
       serverErrors.value = e.response.data.errors || {}
       // If Laravel sent no field errors, show general message on top
       if (!Object.keys(serverErrors.value).length) {
         serverError.value = e.response.data.message || 'Invalid credentials. Please try again.'
       }
-      // Special case: Fortify "These credentials do not match" comes as email error
-      // It will already show under Email/Username input via displayErrors — that's what we want
+      
     } else if (e.response?.status === 401) {
       serverError.value = e.response.data.message || 'Invalid credentials. Please try again.'
     } else {

@@ -1,3 +1,4 @@
+<!-- reset-password.vue -->
 <template>
   <div class="reset">
     <div class="reset__card">
@@ -23,7 +24,7 @@
         @dismiss="error = ''"
       />
 
-      <form v-if="!done" class="reset__form" @submit.prevent="onSubmit">
+      <form v-if="!done && hasToken" class="reset__form" @submit.prevent="onSubmit">
         <CommonBaseInput
           v-model="form.email"
           label="Email"
@@ -64,18 +65,20 @@
           <template #leftIcon>
             <Lock :size="18" />
           </template>
-          <!-- <template #rightIcon>
+          <template #rightIcon>
             <button type="button" class="reset__eye" @click="showConfirm = !showConfirm">
               <Eye v-if="!showConfirm" :size="18" />
               <EyeOff v-else :size="18" />
             </button>
-          </template> -->
+          </template>
         </CommonBaseInput>
 
         <CommonBaseButton type="submit" variant="primary" size="lg" :loading="loading">
           Reset Password
         </CommonBaseButton>
       </form>
+
+      <NuxtLink v-if="!done" to="/forgot-password" class="reset__back" style="text-align:center;">Request a new link</NuxtLink>
     </div>
   </div>
 </template>
@@ -87,6 +90,7 @@ definePageMeta({
   layout: 'auth',
   middleware: 'guest'
 })
+useHead({ title:"Reset Password"})
 
 const route = useRoute()
 const { resetPassword } = useAuth()
@@ -104,6 +108,12 @@ const loading = ref(false)
 const done = ref(false)
 const error = ref('')
 
+const hasToken = computed(() => !!form.value.token)
+
+if (!hasToken.value) {
+  error.value = 'Invalid or expired reset link. Please request a new one.'
+}
+
 async function onSubmit() {
   if (form.value.password !== form.value.password_confirmation) {
     error.value = 'Passwords do not match'
@@ -112,12 +122,15 @@ async function onSubmit() {
   loading.value = true
   error.value = ''
   try {
-        await resetPassword(form.value)
-        done.value = true
+    await resetPassword(form.value)
+    done.value = true
   } catch (e) {
-        error.value = e.response?.data?.errors?.email?.[0] || e.response?.data?.message || 'Invalid or expired token.'
+    error.value = e.response?.data?.errors?.email?.[0]
+      || e.response?.data?.errors?.password?.[0]
+      || e.response?.data?.message
+      || 'Invalid or expired token.'
   } finally {
-        loading.value = false
+    loading.value = false
   }
 }
 </script>
